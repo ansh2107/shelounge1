@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#d7f5fa5b"
+    tools:context="net.simplifiedcoding.shelounge.MainActivity">
+
+
+    <LinearLayout
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/buttonChoose"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Select"
+            android:background="#000"
+            android:textColor="#fff"
+            android:textSize="25dp" />
+
+        <EditText
+            android:id="@+id/editTextName"
+            android:hint="Information(Optional)"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:textSize="30dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="#f9f2f2"
+            android:gravity="center"
+            android:layout_marginTop="30dp"  />
+
+
+
+        <Button
+            android:id="@+id/buttonUpload"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Upload"
+            android:textColor="#fff"
+            android:background="#000"
+            android:textSize="25dp"
+            android:layout_marginTop="30dp"/>
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+</LinearLayout>

@@ -54,9 +54,11 @@ import static net.simplifiedcoding.shelounge.R.id.map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
 
-    ProgressDialog p;
+    public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
     private static final String TAG = "1";
-    private GoogleMap mMap,mMap1;
+    //storage permission code
+    private static final int STORAGE_PERMISSION_CODE = 123;
+    ProgressDialog p;
     ArrayList<LatLng> MarkerPoints;
     GPSTracker gps;
     double latitude;
@@ -68,9 +70,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     JSONArray jsonArray;
     ImageButton medical_shops, female_doctors, see_toilets,woman;
     Button check_status;
-    //storage permission code
-    private static final int STORAGE_PERMISSION_CODE = 123;
-    public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
+    private GoogleMap mMap, mMap1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -524,6 +525,169 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    //This method will be called when the user will tap on allow or deny
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        Log.d(TAG, "Permission callback called-------");
+        switch (requestCode) {
+            case REQUEST_ID_MULTIPLE_PERMISSIONS: {
+
+
+                Map<String, Integer> perms = new HashMap<>();
+                // Initialize the map with both permissions
+                perms.put(Manifest.permission.CAMERA, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.CALL_PHONE, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.RECORD_AUDIO, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.READ_CONTACTS, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.SEND_SMS, PackageManager.PERMISSION_GRANTED);
+
+
+                // Fill with actual results from user
+                if (grantResults.length > 0) {
+                    for (int i = 0; i < permissions.length; i++)
+                        perms.put(permissions[i], grantResults[i]);
+                    // Check for both permissions
+                    if (perms.get(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                            && perms.get(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
+                            && perms.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+                            && perms.get(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+                            && perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                            && perms.get(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                            && perms.get(Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED
+                            && perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        Log.d(TAG, "sms & location services permission granted");
+                        // process the normal flow
+                        //else any one or both the permissions are not granted
+                    } else {
+                        Log.d(TAG, "Some permissions are not granted ask again ");
+                        //permission is denied (this is the first time, when "never ask again" is not checked) so ask again explaining the usage of permission
+//                        // shouldShowRequestPermissionRationale will return true
+                        //show the dialog or snackbar saying its necessary and try again otherwise proceed with setup.
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)
+                                || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CALL_PHONE)
+                                || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)
+                                || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)
+                                || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                                || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.SEND_SMS)
+                                || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                                ) {
+                            showDialogOK("SMS and Location Services Permission required for this app",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            switch (which) {
+                                                case DialogInterface.BUTTON_POSITIVE:
+                                                    checkAndRequestPermissions();
+                                                    break;
+                                                case DialogInterface.BUTTON_NEGATIVE:
+                                                    // proceed with logic by disabling the related features or quit the app.
+                                                    break;
+                                            }
+                                        }
+                                    });
+                        }
+                        //permission is denied (and never ask again is  checked)
+                        //shouldShowRequestPermissionRationale will return false
+                        else {
+                            Toast.makeText(this, "Go to settings and enable permissions", Toast.LENGTH_LONG)
+                                    .show();
+                            //                            //proceed with logic by disabling the related features or quit the app.
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void showDialogOK(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(this)
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", okListener)
+                .create()
+                .show();
+    }
+
+    private boolean checkAndRequestPermissions() {
+        int cam = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA);
+        int call_phone = ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE);
+        int record_audio = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO);
+        int read_contacts = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
+        int send = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS);
+        int write = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int read = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        int access = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        List<String> listPermissionsNeeded = new ArrayList<>();
+
+        if (cam != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.CAMERA);
+        }
+        if (send != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.SEND_SMS);
+        }
+        if (access != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (call_phone != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.CALL_PHONE);
+        }
+        if (record_audio != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.RECORD_AUDIO);
+        }
+        if (read_contacts != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.READ_CONTACTS);
+        }
+        if (write != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (read != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+
+        if (!listPermissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), REQUEST_ID_MULTIPLE_PERMISSIONS);
+            return false;
+        }
+        return true;
+    }
+
+    public void getLocation() {
+        gps = new GPSTracker(MapsActivity.this);
+        if (gps.canGetLocation()) {
+            latitude = gps.getLatitude();
+            longitude = gps.getLongitude();
+
+            Intent openmap = new Intent(getApplicationContext(), MainActivity.class);
+            Bundle b = new Bundle();
+
+            b.putDouble("latitude", latitude);
+            b.putDouble("longitude", longitude);
+            openmap.putExtras(b);
+            startActivity(openmap);
+
+        } else {
+            gps.showSettingsAlert();
+        }
+    }
+
+    public void getLatLong() {
+        gps = new GPSTracker(MapsActivity.this);
+        if (gps.canGetLocation()) {
+            latitude = gps.getLatitude();
+            longitude = gps.getLongitude();
+        } else {
+            gps.showSettingsAlert();
+        }
+    }
+
     // Fetches data from url passed
     private class FetchUrl extends AsyncTask<String, Void, String> {
 
@@ -628,7 +792,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     }
-
 
     class BackGroundTask extends AsyncTask<Void, Void, String> {
 
@@ -783,180 +946,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
 
-    }
-
-
-
-
-    //This method will be called when the user will tap on allow or deny
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        Log.d(TAG, "Permission callback called-------");
-            switch (requestCode) {
-                case REQUEST_ID_MULTIPLE_PERMISSIONS: {
-
-                    Map<String, Integer> perms = new HashMap<>();
-                    // Initialize the map with both permissions
-                    perms.put(Manifest.permission.CAMERA, PackageManager.PERMISSION_GRANTED);
-                    perms.put(Manifest.permission.CALL_PHONE, PackageManager.PERMISSION_GRANTED);
-                    perms.put(Manifest.permission.RECORD_AUDIO, PackageManager.PERMISSION_GRANTED);
-                    perms.put(Manifest.permission.READ_CONTACTS, PackageManager.PERMISSION_GRANTED);
-                    perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
-                    perms.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
-                    perms.put(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                    perms.put(Manifest.permission.SEND_SMS, PackageManager.PERMISSION_GRANTED);
-
-
-
-
-
-
-                    // Fill with actual results from user
-                    if (grantResults.length > 0) {
-                        for (int i = 0; i < permissions.length; i++)
-                            perms.put(permissions[i], grantResults[i]);
-                        // Check for both permissions
-                        if (perms.get(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-                                && perms.get(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
-                                && perms.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-                                && perms.get(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
-                                && perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                                && perms.get(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                && perms.get(Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED
-                                && perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                            Log.d(TAG, "sms & location services permission granted");
-                            // process the normal flow
-                            //else any one or both the permissions are not granted
-                        } else {
-                            Log.d(TAG, "Some permissions are not granted ask again ");
-                            //permission is denied (this is the first time, when "never ask again" is not checked) so ask again explaining the usage of permission
-//                        // shouldShowRequestPermissionRationale will return true
-                            //show the dialog or snackbar saying its necessary and try again otherwise proceed with setup.
-                            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)
-                                    || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CALL_PHONE)
-                                    || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)
-                                    || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)
-                                    || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                                    || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.SEND_SMS)
-                                    || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                    || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                                    ) {
-                                showDialogOK("SMS and Location Services Permission required for this app",
-                                        new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                switch (which) {
-                                                    case DialogInterface.BUTTON_POSITIVE:
-                                                        checkAndRequestPermissions();
-                                                        break;
-                                                    case DialogInterface.BUTTON_NEGATIVE:
-                                                        // proceed with logic by disabling the related features or quit the app.
-                                                        break;
-                                                }
-                                            }
-                                        });
-                            }
-                            //permission is denied (and never ask again is  checked)
-                            //shouldShowRequestPermissionRationale will return false
-                            else {
-                                Toast.makeText(this, "Go to settings and enable permissions", Toast.LENGTH_LONG)
-                                        .show();
-                                //                            //proceed with logic by disabling the related features or quit the app.
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-
-    private void showDialogOK(String message, DialogInterface.OnClickListener okListener) {
-        new AlertDialog.Builder(this)
-                .setMessage(message)
-                .setPositiveButton("OK", okListener)
-                .setNegativeButton("Cancel", okListener)
-                .create()
-                .show();
-    }
-
-
-    private  boolean checkAndRequestPermissions() {
-         int cam = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.CAMERA);
-        int call_phone = ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE);
-        int record_audio = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO);
-        int read_contacts = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
-        int send = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS);
-        int write = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        int read = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        int access = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        List<String> listPermissionsNeeded = new ArrayList<>();
-
-        if (cam != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.CAMERA);
-        }
-        if (send != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.SEND_SMS);
-        }
-        if (access != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-        if (call_phone != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.CALL_PHONE);
-        }
-        if (record_audio != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.RECORD_AUDIO);
-        }
-        if (read_contacts != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.READ_CONTACTS);
-        }
-        if (write != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }
-        if (read != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-        }
-
-        if (!listPermissionsNeeded.isEmpty()) {
-            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),REQUEST_ID_MULTIPLE_PERMISSIONS);
-            return false;
-        }
-        return true;
-    }
-
-    public void getLocation(){
-        gps=new GPSTracker(MapsActivity.this);
-        if(gps.canGetLocation()){
-            latitude=gps.getLatitude();
-            longitude=gps.getLongitude();
-
-            Intent openmap=new Intent(getApplicationContext(),MainActivity.class);
-            Bundle b=new Bundle();
-
-            b.putDouble("latitude", latitude);
-            b.putDouble("longitude", longitude);
-            openmap.putExtras(b);
-            startActivity(openmap);
-
-        }
-        else
-        {
-            gps.showSettingsAlert();
-        }
-    }
-
-    public void getLatLong(){
-        gps=new GPSTracker(MapsActivity.this);
-        if(gps.canGetLocation()){
-            latitude=gps.getLatitude();
-            longitude=gps.getLongitude();
-        }
-        else
-        {
-            gps.showSettingsAlert();
-        }
     }
 }
